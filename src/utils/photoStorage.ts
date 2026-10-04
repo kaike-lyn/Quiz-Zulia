@@ -1,5 +1,5 @@
-import defaultFallbackPhoto from '../assets/images/julia_photo_1791137403430.jpg';
-import defaultFallbackLogo from '../assets/images/julia_logo_1791137415088.jpg';
+import defaultFallbackPhoto from '../assets/images/julia_photo_real.jpg';
+import defaultFallbackLogo from '../assets/images/julia_logo_real.jpg';
 
 export const DEFAULT_FALLBACK_PHOTO = defaultFallbackPhoto;
 export const DEFAULT_FALLBACK_LOGO = defaultFallbackLogo;
