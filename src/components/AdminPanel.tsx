@@ -21,7 +21,8 @@ import {
   Camera,
   Upload,
   Image,
-  Sparkles
+  Sparkles,
+  Database
 } from 'lucide-react';
 import { saveQuizConfig, fetchAllSubmissions, deleteSubmission, resetRanking } from '../services/quizApi';
 import {
@@ -261,12 +262,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleResetLeaderboard = async () => {
-    const code = prompt('Para zerar todo o ranking e resultados, digite julia2026:');
-    if (code === 'julia2026') {
-      await resetRanking('julia2026');
+    const code = prompt('Digite a senha da nutricionista para zerar o ranking e resultados:');
+    if (code === 'julia2026' || code === 'nutri2026') {
+      await resetRanking(code);
       setSubmissions([]);
       onRefreshData();
       showToast('Ranking zerado com sucesso!');
+    } else if (code) {
+      alert('Senha incorreta.');
     }
   };
 
@@ -346,10 +349,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <div>
               <input
                 type="password"
-                placeholder="Digite o PIN de acesso (ex: julia2026)"
+                placeholder="Digite a senha de acesso"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 className="w-full px-4 py-3 bg-[#FFF9F4] border border-[#C58D65]/40 rounded-xl text-center text-sm font-mono tracking-widest text-[#713000] focus:outline-none focus:ring-2 focus:ring-[#B66C3D]"
+                autoFocus
               />
             </div>
 
@@ -357,12 +361,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               type="submit"
               className="w-full py-3 text-sm font-semibold text-white bg-[#B66C3D] hover:bg-[#9E582E] rounded-xl shadow transition-colors cursor-pointer"
             >
-              Entrar no Painel de Controle
+              Entrar no Painel
             </button>
-
-            <p className="text-[11px] text-[#713000]/60">
-              PIN padrão pré-configurado: <code className="bg-[#F0E0D0] px-1 py-0.5 rounded">julia2026</code>
-            </p>
           </form>
         </div>
       </div>
@@ -432,7 +432,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               : 'text-[#713000] hover:bg-[#F0E0D0]'
           }`}
         >
-          <span>Resultados Salvos</span>
+          <Database className="w-4 h-4" />
+          <span>Banco de Respostas</span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-white/20">
             {submissions.length}
           </span>

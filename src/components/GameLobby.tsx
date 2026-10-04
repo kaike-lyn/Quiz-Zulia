@@ -46,8 +46,6 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
   const [photoUrl, setPhotoUrl] = useState<string>(() => {
     return localStorage.getItem('jb_nutricionista_custom_photo') || DEFAULT_FALLBACK_PHOTO;
   });
-  const [photoUploadSuccess, setPhotoUploadSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check server for stored custom photo
@@ -66,23 +64,6 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
     window.addEventListener('jb_photo_updated', handlePhotoUpdated);
     return () => window.removeEventListener('jb_photo_updated', handlePhotoUpdated);
   }, []);
-
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setPhotoUrl(dataUrl);
-        await uploadNutricionistaPhoto(dataUrl);
-        setPhotoUploadSuccess(true);
-        setTimeout(() => setPhotoUploadSuccess(false), 3500);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   const toggleSound = () => {
     const muted = soundManager.toggleMute();
@@ -133,15 +114,6 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
   return (
     <div className="min-h-[85vh] flex flex-col justify-center max-w-4xl mx-auto px-4 py-8">
       
-      {/* Hidden file input to upload Julia's exact original photo */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        onChange={handlePhotoSelect}
-        className="hidden"
-      />
-
       {/* Brand Header Bar with Logo */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <BrandLogo size="md" />
@@ -180,23 +152,12 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
             {/* Julia's Portrait Header Card */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <div className="relative shrink-0">
-                <div className="w-28 sm:w-36 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-[#C58D65]/60 shadow-md bg-[#F0E0D0] relative group">
+                <div className="w-28 sm:w-36 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-[#C58D65]/60 shadow-md bg-[#F0E0D0] relative">
                   <img
                     src={photoUrl}
                     alt="Nutricionista Julia Bucchianico"
-                    className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover object-top"
                   />
-                  
-                  {/* Overlay button to upload/change photo directly */}
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Clique para selecionar e carregar sua foto original"
-                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity p-2 text-center cursor-pointer"
-                  >
-                    <Camera className="w-6 h-6 mb-1 text-[#F0E0D0]" />
-                    <span className="text-[10px] font-bold font-mono">Trocar Foto</span>
-                  </button>
 
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#713000]/95 via-[#713000]/60 to-transparent p-1.5 text-center pointer-events-none">
                     <span className="text-[9px] font-bold text-white uppercase font-mono tracking-wider block">
@@ -207,23 +168,6 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
                     </span>
                   </div>
                 </div>
-
-                {/* Direct quick button under photo to choose file */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-1.5 w-full py-1 px-2 text-[10px] font-bold font-mono text-[#B66C3D] hover:text-[#713000] bg-[#FFF9F4] hover:bg-[#F0E0D0] border border-[#C58D65]/40 rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                >
-                  <Camera className="w-3 h-3" />
-                  <span>Carregar Minha Foto</span>
-                </button>
-
-                {photoUploadSuccess && (
-                  <div className="mt-1 text-[10px] font-bold text-[#62552D] bg-[#F0E0D0] px-2 py-0.5 rounded text-center flex items-center justify-center gap-1">
-                    <Check className="w-3 h-3" />
-                    <span>Foto carregada!</span>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2 text-center sm:text-left flex-1">
