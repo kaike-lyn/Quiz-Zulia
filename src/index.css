@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: 'Fraunces', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    
+    /* Official Julia Bucchianico Health Palette */
+    --color-marrom-cafe: #713000;
+    --color-cobre: #B66C3D;
+    --color-bronze-claro: #C58D65;
+    --color-verde-oliva: #62552D;
+    --color-bege-champagne: #F0E0D0;
+    --color-off-white: #FFF9F4;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FFF9F4;
+    color: #713000;
+  }
+
+  h1, h2, h3, .font-serif-display {
+    font-family: var(--font-serif);
+    color: #713000;
+  }
+}

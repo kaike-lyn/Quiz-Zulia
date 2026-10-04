@@ -1,0 +1,6 @@
+{
+  "name": "Quiz Mitos & Verdades | Julia Bucchianico Nutrição",
+  "description": "Quiz interativo de nutrição clínica, mitos e verdades com ranking em tempo real e critérios de pontuação e agilidade, idealizado pela nutricionista Julia Bucchianico.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
