@@ -1,5 +1,8 @@
-export const DEFAULT_FALLBACK_PHOTO = '/src/assets/images/julia_bucchianico_portrait_1791134749820.jpg';
-export const DEFAULT_FALLBACK_LOGO = '/src/assets/images/julia_bucchianico_brand_logo_1791134107972.jpg';
+import defaultFallbackPhoto from '../assets/images/julia_photo_1791137403430.jpg';
+import defaultFallbackLogo from '../assets/images/julia_logo_1791137415088.jpg';
+
+export const DEFAULT_FALLBACK_PHOTO = defaultFallbackPhoto;
+export const DEFAULT_FALLBACK_LOGO = defaultFallbackLogo;
 
 // Photo Helpers
 export async function fetchServerPhoto(): Promise<string | null> {
