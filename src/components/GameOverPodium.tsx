@@ -15,7 +15,8 @@ import {
   XCircle,
   ShieldCheck,
   Sparkles,
-  Home
+  Home,
+  Instagram
 } from 'lucide-react';
 
 interface GameOverPodiumProps {
@@ -48,20 +49,26 @@ export const GameOverPodium: React.FC<GameOverPodiumProps> = ({
   const userRank = rankIndex !== -1 ? rankIndex + 1 : 1;
 
   const handleShare = async () => {
-    const text = `🎮 Fiz o Quiz de Mitos & Verdades da Nutricionista Julia Bucchianico! Acertei ${submission.score}/${submission.totalQuestions} em ${submission.formattedTime} e estou no ${userRank}º lugar do ranking oficial! Consegue bater meu recorde de tempo?`;
+    const text = `🎮 Fiz o Quiz de Mitos & Verdades da Nutricionista Julia Bucchianico! Acertei ${submission.score}/${submission.totalQuestions} em ${submission.formattedTime} e estou no ${userRank}º lugar do ranking oficial! 🏆 Consegue bater meu recorde de tempo?`;
     const url = window.location.origin;
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Meu Recorde no Quiz da Julia Bucchianico', text, url });
+        await navigator.share({
+          title: 'Meu Recorde no Quiz da Nutricionista Julia Bucchianico',
+          text,
+          url,
+        });
         return;
       } catch {
         // fallback
       }
     }
-    await navigator.clipboard.writeText(`${text}\n${url}`);
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+    } catch {}
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 3000);
   };
 
   return (
@@ -167,10 +174,11 @@ export const GameOverPodium: React.FC<GameOverPodiumProps> = ({
 
             <button
               onClick={handleShare}
-              className="px-6 py-3.5 bg-gradient-to-r from-[#B66C3D] to-[#C58D65] hover:from-[#A05329] hover:to-[#B66C3D] active:scale-95 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center gap-2 cursor-pointer border-b-4 border-[#8E471F]"
+              className="px-6 py-3.5 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] hover:opacity-95 active:scale-95 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center gap-2 cursor-pointer border-b-4 border-[#651c87]"
+              title="Compartilhar resultado no Instagram"
             >
-              {copied ? <Check className="w-4 h-4 text-[#F0E0D0]" /> : <Share2 className="w-4 h-4" />}
-              <span>{copied ? 'Link Copiado!' : 'Compartilhar Recorde no WhatsApp'}</span>
+              {copied ? <Check className="w-4 h-4 text-white" /> : <Instagram className="w-4 h-4 text-white" />}
+              <span>{copied ? 'Copiado! Cole no Instagram' : 'Compartilhar no Instagram'}</span>
             </button>
 
             <button
