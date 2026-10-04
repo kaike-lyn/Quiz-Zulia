@@ -65,15 +65,29 @@ app.put('/api/quiz-config', (req: Request, res: Response) => {
   res.json({ success: true, count: questions.length });
 });
 
+// Helper to find public uploaded files
+function findPublicFile(names: string[]): string | null {
+  for (const name of names) {
+    const pubPath = path.join(__dirname, 'public', name);
+    const distPath = path.join(__dirname, 'dist', name);
+    if (fs.existsSync(pubPath) || fs.existsSync(distPath)) {
+      return `/${name}`;
+    }
+  }
+  return null;
+}
+
 // GET /api/photo
 app.get('/api/photo', (_req: Request, res: Response) => {
   const photoPath = path.join(DATA_DIR, 'nutricionista_foto.txt');
   if (fs.existsSync(photoPath)) {
     const dataUrl = fs.readFileSync(photoPath, 'utf-8');
-    res.json({ photoUrl: dataUrl });
-  } else {
-    res.json({ photoUrl: null });
+    if (dataUrl && dataUrl.trim().length > 0) {
+      return res.json({ photoUrl: dataUrl });
+    }
   }
+  const publicPhoto = findPublicFile(['foto.jpeg', 'foto.jpg', 'foto.png', 'photo.jpeg', 'photo.jpg', 'photo.png']);
+  res.json({ photoUrl: publicPhoto || null });
 });
 
 // POST /api/upload-photo
@@ -92,10 +106,12 @@ app.get('/api/logo', (_req: Request, res: Response) => {
   const logoPath = path.join(DATA_DIR, 'nutricionista_logo.txt');
   if (fs.existsSync(logoPath)) {
     const dataUrl = fs.readFileSync(logoPath, 'utf-8');
-    res.json({ logoUrl: dataUrl || null });
-  } else {
-    res.json({ logoUrl: null });
+    if (dataUrl && dataUrl.trim().length > 0) {
+      return res.json({ logoUrl: dataUrl });
+    }
   }
+  const publicLogo = findPublicFile(['logo.jpeg', 'logo.jpg', 'logo.png']);
+  res.json({ logoUrl: publicLogo || null });
 });
 
 // POST /api/upload-logo
