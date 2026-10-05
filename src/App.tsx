@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { QuizQuestion, QuizSubmission, LeaderboardEntry, QuizSettings } from './types/quiz';
 import { INITIAL_QUESTIONS, DEFAULT_SETTINGS } from './data/initialQuestions';
 import { fetchQuizConfig, fetchLeaderboard, submitQuizResult } from './services/quizApi';
@@ -91,83 +92,92 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FFF9F4] text-[#713000] flex flex-col justify-between selection:bg-[#B66C3D] selection:text-white">
       
-      {/* Dynamic Screen rendering */}
-      <main className="flex-1 flex flex-col justify-center">
-        
-        {screen === 'LOBBY' && (
-          <GameLobby
-            onStartGame={handleStartGame}
-            onOpenLeaderboard={() => setScreen('LEADERBOARD')}
-            onOpenAdmin={() => setScreen('ADMIN')}
-            leaderboard={leaderboard}
-            totalQuestions={questions.length}
-          />
-        )}
+      {/* Dynamic Screen rendering with smooth fade transitions */}
+      <main className="flex-1 flex flex-col justify-center overflow-x-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={screen}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="w-full flex-1 flex flex-col justify-center"
+          >
+            {screen === 'LOBBY' && (
+              <GameLobby
+                onStartGame={handleStartGame}
+                onOpenLeaderboard={() => setScreen('LEADERBOARD')}
+                onOpenAdmin={() => setScreen('ADMIN')}
+                leaderboard={leaderboard}
+                totalQuestions={questions.length}
+              />
+            )}
 
-        {screen === 'COUNTDOWN' && activePlayer && (
-          <GameCountdown
-            playerName={activePlayer.name}
-            onCountdownComplete={handleCountdownComplete}
-          />
-        )}
+            {screen === 'COUNTDOWN' && activePlayer && (
+              <GameCountdown
+                playerName={activePlayer.name}
+                onCountdownComplete={handleCountdownComplete}
+              />
+            )}
 
-        {screen === 'PLAYING' && activePlayer && (
-          <GameStage
-            questions={gameQuestions}
-            player={activePlayer}
-            onFinishGame={handleFinishGame}
-            onExitGame={() => setScreen('LOBBY')}
-          />
-        )}
+            {screen === 'PLAYING' && activePlayer && (
+              <GameStage
+                questions={gameQuestions}
+                player={activePlayer}
+                onFinishGame={handleFinishGame}
+                onExitGame={() => setScreen('LOBBY')}
+              />
+            )}
 
-        {screen === 'GAME_OVER' && lastSubmission && (
-          <GameOverPodium
-            submission={lastSubmission}
-            leaderboard={leaderboard}
-            allQuestions={gameQuestions}
-            onGoToLobby={() => setScreen('LOBBY')}
-          />
-        )}
+            {screen === 'GAME_OVER' && lastSubmission && (
+              <GameOverPodium
+                submission={lastSubmission}
+                leaderboard={leaderboard}
+                allQuestions={gameQuestions}
+                onGoToLobby={() => setScreen('LOBBY')}
+              />
+            )}
 
-        {screen === 'LEADERBOARD' && (
-          <div className="py-6">
-            <div className="max-w-5xl mx-auto px-4 mb-4">
-              <button
-                onClick={() => setScreen('LOBBY')}
-                className="text-xs font-mono font-bold text-[#2F4F3B] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                ← Voltar ao Início do Jogo
-              </button>
-            </div>
-            <LeaderboardView
-              leaderboard={leaderboard}
-              onStartQuiz={() => setScreen('LOBBY')}
-            />
-          </div>
-        )}
+            {screen === 'LEADERBOARD' && (
+              <div className="py-6">
+                <div className="max-w-5xl mx-auto px-4 mb-4">
+                  <button
+                    onClick={() => setScreen('LOBBY')}
+                    className="text-xs font-mono font-bold text-[#2F4F3B] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    ← Voltar ao Início do Jogo
+                  </button>
+                </div>
+                <LeaderboardView
+                  leaderboard={leaderboard}
+                  onStartQuiz={() => setScreen('LOBBY')}
+                />
+              </div>
+            )}
 
-        {screen === 'ADMIN' && (
-          <div className="py-6">
-            <div className="max-w-6xl mx-auto px-4 mb-4">
-              <button
-                onClick={() => setScreen('LOBBY')}
-                className="text-xs font-mono font-bold text-[#2F4F3B] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                ← Voltar para o Jogo
-              </button>
-            </div>
-            <AdminPanel
-              questions={questions}
-              setQuestions={setQuestions}
-              settings={settings}
-              setSettings={setSettings}
-              isAdminLoggedIn={isAdminLoggedIn}
-              setIsAdminLoggedIn={setIsAdminLoggedIn}
-              onRefreshData={loadAllData}
-            />
-          </div>
-        )}
-
+            {screen === 'ADMIN' && (
+              <div className="py-6">
+                <div className="max-w-6xl mx-auto px-4 mb-4">
+                  <button
+                    onClick={() => setScreen('LOBBY')}
+                    className="text-xs font-mono font-bold text-[#2F4F3B] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    ← Voltar para o Jogo
+                  </button>
+                </div>
+                <AdminPanel
+                  questions={questions}
+                  setQuestions={setQuestions}
+                  settings={settings}
+                  setSettings={setSettings}
+                  isAdminLoggedIn={isAdminLoggedIn}
+                  setIsAdminLoggedIn={setIsAdminLoggedIn}
+                  onRefreshData={loadAllData}
+                />
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
     </div>

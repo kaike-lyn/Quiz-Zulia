@@ -4,6 +4,9 @@ class SoundController {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
 
+  private bgmInterval: any = null;
+  public isBgmPlaying: boolean = false;
+
   constructor() {
     this.isMuted = localStorage.getItem('jb_quiz_muted') === 'true';
   }
@@ -23,6 +26,9 @@ class SoundController {
   public toggleMute(): boolean {
     this.isMuted = !this.isMuted;
     localStorage.setItem('jb_quiz_muted', String(this.isMuted));
+    if (this.isMuted) {
+      this.stopBgm();
+    }
     return this.isMuted;
   }
 
@@ -205,6 +211,88 @@ class SoundController {
       });
     } catch (e) {
       // fallback
+    }
+  }
+
+  // Gentle, uplifting background music loop synthesized via Web Audio API
+  public startBgm() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    if (this.isBgmPlaying) return;
+
+    this.isBgmPlaying = true;
+
+    // Progression of calm, cheerful chords (Cmaj7 -> Am7 -> Fmaj7 -> G)
+    const chordProgressions = [
+      [261.63, 329.63, 392.00, 493.88], // C, E, G, B
+      [220.00, 261.63, 329.63, 392.00], // A, C, E, G
+      [174.61, 220.00, 261.63, 329.63], // F, A, C, E
+      [196.00, 246.94, 293.66, 392.00], // G, B, D, G
+    ];
+
+    let chordIndex = 0;
+    const tempoMs = 1800; // ~1.8s per chord measure
+
+    const playNextBar = () => {
+      if (!this.isBgmPlaying || !this.ctx || this.isMuted) return;
+
+      const chord = chordProgressions[chordIndex % chordProgressions.length];
+      chordIndex++;
+
+      const now = this.ctx.currentTime;
+
+      // Soft bass note
+      try {
+        const bassOsc = this.ctx.createOscillator();
+        const bassGain = this.ctx.createGain();
+        bassOsc.type = 'triangle';
+        bassOsc.frequency.setValueAtTime(chord[0] / 2, now);
+        bassGain.gain.setValueAtTime(0.04, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+        bassOsc.connect(bassGain);
+        bassGain.connect(this.ctx.destination);
+        bassOsc.start(now);
+        bassOsc.stop(now + 1.6);
+
+        // Light arpeggiated melodic notes
+        chord.forEach((freq, idx) => {
+          const noteDelay = idx * 0.22;
+          const osc = this.ctx!.createOscillator();
+          const gain = this.ctx!.createGain();
+          const filter = this.ctx!.createBiquadFilter();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + noteDelay);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(900, now + noteDelay);
+
+          // Soft, non-intrusive volume
+          gain.gain.setValueAtTime(0.03, now + noteDelay);
+          gain.gain.exponentialRampToValueAtTime(0.0005, now + noteDelay + 0.45);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx!.destination);
+
+          osc.start(now + noteDelay);
+          osc.stop(now + noteDelay + 0.45);
+        });
+      } catch (err) {
+        // Audio error catch
+      }
+    };
+
+    playNextBar();
+    this.bgmInterval = setInterval(playNextBar, tempoMs);
+  }
+
+  public stopBgm() {
+    this.isBgmPlaying = false;
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
     }
   }
 }

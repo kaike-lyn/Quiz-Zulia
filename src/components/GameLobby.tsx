@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Shuffle,
   Camera,
-  Check
+  Check,
+  Timer
 } from 'lucide-react';
 
 interface GameLobbyProps {
@@ -186,29 +187,38 @@ export const GameLobby: React.FC<GameLobbyProps> = ({
               </div>
             </div>
 
-            {/* MANDATORY USER NOTICE: Clean health-aesthetic instruction box */}
-            <div className="bg-[#FFF9F4] border-2 border-[#C58D65]/50 rounded-2xl p-4 text-xs text-left space-y-2 shadow-xs">
-              <div className="flex items-center gap-2 text-[#713000] font-bold uppercase tracking-wider text-[11px]">
-                <AlertTriangle className="w-4 h-4 text-[#B66C3D] shrink-0" />
+            {/* MANDATORY USER NOTICE: High visibility instructions with timer warning */}
+            <div className="bg-amber-50/95 border-2 border-amber-400 rounded-2xl p-4 sm:p-5 text-xs text-left space-y-3 shadow-md">
+              <div className="flex items-center gap-2 text-amber-950 font-black uppercase tracking-wider text-xs">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                 <span>Instruções Importantes da Prova</span>
               </div>
               
-              <ul className="space-y-1.5 text-[#713000]/90 text-[11px] leading-relaxed">
-                <li className="flex items-start gap-1.5">
-                  <span className="text-[#B66C3D] font-bold">1.</span>
-                  <span>Após selecionar a alternativa, <strong>você deve clicar no botão "Próxima Pergunta"</strong> para avançar.</span>
+              {/* Highlight Banner: O TEMPO CONTINUA RODANDO! */}
+              <div className="p-3.5 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-950 flex items-start gap-3 shadow-xs">
+                <Timer className="w-6 h-6 text-rose-600 shrink-0 mt-0.5 animate-pulse" />
+                <div className="text-xs leading-snug space-y-1">
+                  <span className="text-rose-900 font-black uppercase block text-[13px] tracking-wide">
+                    ⏱️ ATENÇÃO MÁXIMA AO TEMPO:
+                  </span>
+                  <p className="text-rose-900/90 text-xs">
+                    Após marcar sua resposta, <strong>o cronômetro continuará rodando</strong> enquanto você não clicar no botão <strong>"PRÓXIMA PERGUNTA"</strong>! Para garantir um bom lugar no ranking, marque e clique em avançar sem demora.
+                  </p>
+                </div>
+              </div>
+
+              <ul className="space-y-2 text-[#713000] text-xs leading-relaxed pt-1 font-medium">
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#B66C3D] text-white flex items-center justify-center text-[11px] font-bold shrink-0">1</span>
+                  <span><strong>Clique em "Próxima Pergunta"</strong> imediatamente após selecionar sua resposta para parar o tempo daquela questão.</span>
                 </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="text-[#B66C3D] font-bold">2.</span>
-                  <span><strong className="text-[#713000]">O cronômetro continua rodando sem parar</strong> durante todo o teste até o envio da última questão.</span>
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#B66C3D] text-white flex items-center justify-center text-[11px] font-bold shrink-0">2</span>
+                  <span><strong>Tentativa única e definitiva:</strong> Cada participante tem apenas 1 chance registrada com seu e-mail.</span>
                 </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="text-[#B66C3D] font-bold">3.</span>
-                  <span>A <strong>ordem das perguntas é sempre sorteada de forma aleatória</strong> a cada tentativa!</span>
-                </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="text-[#B66C3D] font-bold">4.</span>
-                  <span>O <strong>gabarito oficial com as explicações</strong> ficará disponível <strong>somente ao final</strong> para você não perder tempo.</span>
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#B66C3D] text-white flex items-center justify-center text-[11px] font-bold shrink-0">3</span>
+                  <span>O <strong>gabarito oficial com as explicações</strong> ficará disponível <strong>somente ao final</strong> para você não perder tempo durante a prova.</span>
                 </li>
               </ul>
             </div>

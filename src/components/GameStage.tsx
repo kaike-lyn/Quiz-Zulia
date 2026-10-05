@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { QuizQuestion, ParticipantAnswer, QuizSubmission, QuestionAnswerType } from '../types/quiz';
 import { soundManager } from '../utils/audio';
 import {
@@ -9,7 +10,8 @@ import {
   Sparkles,
   User,
   Check,
-  AlertCircle
+  AlertCircle,
+  Music
 } from 'lucide-react';
 import { formatDuration } from '../services/quizApi';
 
@@ -40,6 +42,9 @@ export const GameStage: React.FC<GameStageProps> = ({
     startTimeRef.current = Date.now();
     questionStartTimeRef.current = Date.now();
 
+    // Start ambient background music synthesized in real-time
+    soundManager.startBgm();
+
     timerIntervalRef.current = setInterval(() => {
       const now = Date.now();
       const seconds = (now - startTimeRef.current) / 1000;
@@ -48,6 +53,7 @@ export const GameStage: React.FC<GameStageProps> = ({
 
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      soundManager.stopBgm();
     };
   }, []);
 
@@ -108,6 +114,7 @@ export const GameStage: React.FC<GameStageProps> = ({
   };
 
   const finishGame = (finalAnswers: ParticipantAnswer[]) => {
+    soundManager.stopBgm();
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
     }
@@ -134,7 +141,12 @@ export const GameStage: React.FC<GameStageProps> = ({
   const toggleSound = () => {
     const muted = soundManager.toggleMute();
     setIsMuted(muted);
-    if (!muted) soundManager.playClick();
+    if (!muted) {
+      soundManager.playClick();
+      soundManager.startBgm();
+    } else {
+      soundManager.stopBgm();
+    }
   };
 
   const isLastQuestion = currentIndex === questions.length - 1;
@@ -166,14 +178,25 @@ export const GameStage: React.FC<GameStageProps> = ({
           <span>{formatDuration(elapsedSeconds)}</span>
         </div>
 
-        {/* Right: Audio mute toggle */}
+        {/* Right: Audio and Music Mute Toggle */}
         <div className="flex items-center gap-2">
           <button
             onClick={toggleSound}
-            className="p-2 rounded-xl bg-[#FFF9F4] hover:bg-[#F0E0D0] text-[#B66C3D] border border-[#F0E0D0] transition-colors cursor-pointer"
-            title={isMuted ? 'Ativar som' : 'Silenciar som'}
+            className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono font-semibold ${
+              isMuted
+                ? 'bg-slate-100 text-slate-400 border-slate-200'
+                : 'bg-[#FFF9F4] hover:bg-[#F0E0D0] text-[#B66C3D] border-[#F0E0D0]'
+            }`}
+            title={isMuted ? 'Ativar música e efeitos' : 'Silenciar áudio'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-slate-400" /> : <Volume2 className="w-4 h-4 text-[#B66C3D]" />}
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <>
+                <Volume2 className="w-4 h-4 text-[#B66C3D]" />
+                <Music className="w-3.5 h-3.5 text-[#B66C3D] animate-bounce hidden sm:inline" />
+              </>
+            )}
           </button>
         </div>
 
@@ -181,103 +204,115 @@ export const GameStage: React.FC<GameStageProps> = ({
 
       {/* Progress Bar in Cobre & Bronze Claro Gradient */}
       <div className="w-full bg-[#F0E0D0] h-2 rounded-full overflow-hidden mb-4 shadow-inner">
-        <div
-          className="bg-gradient-to-r from-[#B66C3D] to-[#C58D65] h-full transition-all duration-300 rounded-full"
-          style={{ width: `${progressPercent}%` }}
+        <motion.div
+          className="bg-gradient-to-r from-[#B66C3D] to-[#C58D65] h-full rounded-full"
+          initial={false}
+          animate={{ width: `${progressPercent}%` }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
         />
       </div>
 
-      {/* Center Arena: Question Card */}
+      {/* Center Arena: Animated Question Card Transition */}
       <div className="flex-1 flex flex-col justify-center">
-        <div className="bg-white border-2 border-[#C58D65]/40 rounded-3xl p-6 sm:p-10 shadow-xl text-center space-y-6 relative overflow-hidden">
-          
-          {/* Category Pill Tag */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F0E0D0] border border-[#C58D65]/30 text-[#713000] text-xs font-mono font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-[#B66C3D]" />
-            <span>{currentQuestion.category}</span>
-          </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestion.id}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="bg-white border-2 border-[#C58D65]/40 rounded-3xl p-6 sm:p-10 shadow-xl text-center space-y-6 relative overflow-hidden"
+          >
+            {/* Category Pill Tag */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F0E0D0] border border-[#C58D65]/30 text-[#713000] text-xs font-mono font-bold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-[#B66C3D]" />
+              <span>{currentQuestion.category}</span>
+            </div>
 
-          {/* Statement */}
-          <h2 className="font-serif-display text-2xl sm:text-3xl lg:text-4xl text-[#713000] font-semibold leading-tight text-balance max-w-3xl mx-auto">
-            "{currentQuestion.statement}"
-          </h2>
+            {/* Statement */}
+            <h2 className="font-serif-display text-2xl sm:text-3xl lg:text-4xl text-[#713000] font-semibold leading-tight text-balance max-w-3xl mx-auto">
+              "{currentQuestion.statement}"
+            </h2>
 
-          <p className="text-xs text-[#713000]/70 font-mono">
-            {selectedAnswer === null
-              ? 'Selecione uma das opções abaixo para responder:'
-              : 'Opção marcada! Agora clique no botão abaixo para prosseguir:'}
-          </p>
+            <p className="text-xs text-[#713000]/80 font-mono font-medium">
+              {selectedAnswer === null
+                ? 'Toque em uma das opções abaixo para responder:'
+                : '✅ Opção marcada! Clique no botão abaixo para avançar o tempo:'}
+            </p>
 
-          {/* The 2 Giant Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-1 max-w-2xl mx-auto w-full">
-            
-            {/* BUTTON 1: VERDADEIRO (Verde Claro Luminoso) */}
-            <button
-              onClick={() => handleSelectAnswer('VERDADEIRO')}
-              className={`p-6 rounded-2xl font-black text-xl sm:text-2xl transition-all cursor-pointer flex flex-col items-center justify-center gap-1 select-none border-b-6 active:translate-y-1 active:border-b-2 shadow-lg ${
-                selectedAnswer === 'VERDADEIRO'
-                  ? 'bg-gradient-to-b from-emerald-500 to-green-600 border-green-800 text-white ring-4 ring-emerald-300 ring-offset-2 scale-102 shadow-emerald-500/30'
-                  : 'bg-gradient-to-b from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-green-700 text-white shadow-emerald-400/25 hover:scale-[1.01]'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-serif-display tracking-wider drop-shadow-xs">
-                <span>VERDADEIRO</span>
+            {/* The 2 Giant Action Buttons with Scale Animation */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 max-w-2xl mx-auto w-full">
+              
+              {/* BUTTON 1: VERDADEIRO (Verde Claro Luminoso) */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{ scale: selectedAnswer === 'VERDADEIRO' ? 1.02 : 1 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                onClick={() => handleSelectAnswer('VERDADEIRO')}
+                className={`py-4 sm:py-5 px-6 rounded-2xl font-black text-xl sm:text-2xl cursor-pointer flex items-center justify-center gap-2 select-none border-b-6 shadow-lg transition-colors ${
+                  selectedAnswer === 'VERDADEIRO'
+                    ? 'bg-gradient-to-b from-emerald-500 to-green-600 border-green-800 text-white ring-4 ring-emerald-300 ring-offset-2 shadow-emerald-500/30'
+                    : 'bg-gradient-to-b from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-green-700 text-white shadow-emerald-400/25'
+                }`}
+              >
+                <span className="font-serif-display tracking-wider drop-shadow-xs">VERDADEIRO</span>
                 {selectedAnswer === 'VERDADEIRO' && (
-                  <Check className="w-5 h-5 text-white animate-in zoom-in stroke-[3]" />
+                  <Check className="w-6 h-6 text-white animate-in zoom-in stroke-[3]" />
                 )}
-              </div>
-              <span className="text-[11px] font-mono font-bold opacity-90 uppercase tracking-widest text-emerald-100">
-                [ Tecla V ]
-              </span>
-            </button>
+              </motion.button>
 
-            {/* BUTTON 2: MITO / FALSO (Vermelho Vibrante) */}
-            <button
-              onClick={() => handleSelectAnswer('FALSO')}
-              className={`p-6 rounded-2xl font-black text-xl sm:text-2xl transition-all cursor-pointer flex flex-col items-center justify-center gap-1 select-none border-b-6 active:translate-y-1 active:border-b-2 shadow-lg ${
-                selectedAnswer === 'FALSO'
-                  ? 'bg-gradient-to-b from-rose-500 to-red-600 border-red-800 text-white ring-4 ring-rose-300 ring-offset-2 scale-102 shadow-rose-500/30'
-                  : 'bg-gradient-to-b from-rose-400 to-red-500 hover:from-rose-500 hover:to-red-600 border-red-700 text-white shadow-rose-400/25 hover:scale-[1.01]'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-serif-display tracking-wider drop-shadow-xs">
-                <span>MITO / FALSO</span>
+              {/* BUTTON 2: MITO / FALSO (Vermelho Vibrante) */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{ scale: selectedAnswer === 'FALSO' ? 1.02 : 1 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                onClick={() => handleSelectAnswer('FALSO')}
+                className={`py-4 sm:py-5 px-6 rounded-2xl font-black text-xl sm:text-2xl cursor-pointer flex items-center justify-center gap-2 select-none border-b-6 shadow-lg transition-colors ${
+                  selectedAnswer === 'FALSO'
+                    ? 'bg-gradient-to-b from-rose-500 to-red-600 border-red-800 text-white ring-4 ring-rose-300 ring-offset-2 shadow-rose-500/30'
+                    : 'bg-gradient-to-b from-rose-400 to-red-500 hover:from-rose-500 hover:to-red-600 border-red-700 text-white shadow-rose-400/25'
+                }`}
+              >
+                <span className="font-serif-display tracking-wider drop-shadow-xs">MITO / FALSO</span>
                 {selectedAnswer === 'FALSO' && (
-                  <Check className="w-5 h-5 text-white animate-in zoom-in stroke-[3]" />
+                  <Check className="w-6 h-6 text-white animate-in zoom-in stroke-[3]" />
                 )}
-              </div>
-              <span className="text-[11px] font-mono font-bold opacity-90 uppercase tracking-widest text-rose-100">
-                [ Tecla F ]
-              </span>
-            </button>
+              </motion.button>
 
-          </div>
+            </div>
 
-          {/* NEXT QUESTION ACTION BUTTON (Appears as soon as an option is selected!) */}
-          <div className="pt-2">
-            {selectedAnswer !== null ? (
-              <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <button
-                  onClick={handleNextQuestion}
-                  className="w-full max-w-md mx-auto py-4 px-8 bg-gradient-to-r from-[#B66C3D] to-[#C58D65] hover:from-[#A05329] hover:to-[#B66C3D] active:scale-95 text-white font-black text-base uppercase tracking-wider rounded-2xl shadow-xl flex items-center justify-center gap-3 cursor-pointer border-b-4 border-[#8E471F] animate-pulse"
-                >
-                  <span>{isLastQuestion ? 'FINALIZAR E VER RESULTADO' : 'PRÓXIMA PERGUNTA'}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+            {/* NEXT QUESTION ACTION BUTTON (Appears as soon as an option is selected!) */}
+            <div className="pt-2">
+              {selectedAnswer !== null ? (
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+                    onClick={handleNextQuestion}
+                    className="w-full max-w-md mx-auto py-4 px-8 bg-gradient-to-r from-[#B66C3D] to-[#C58D65] hover:from-[#A05329] hover:to-[#B66C3D] text-white font-black text-base sm:text-lg uppercase tracking-wider rounded-2xl shadow-xl flex items-center justify-center gap-3 cursor-pointer border-b-4 border-[#8E471F] animate-pulse"
+                  >
+                    <span>{isLastQuestion ? 'FINALIZAR E VER RESULTADO' : 'PRÓXIMA PERGUNTA'}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </motion.button>
 
-                <p className="text-[11px] text-[#713000]/70 font-mono">
-                  Dica: Você também pode pressionar [ Enter ] ou a barra de espaço para avançar!
-                </p>
-              </div>
-            ) : (
-              <div className="text-xs text-[#713000]/60 italic py-3 flex items-center justify-center gap-1.5 font-mono">
-                <AlertCircle className="w-4 h-4 text-[#B66C3D]" />
-                <span>Selecione uma resposta para habilitar o botão de avanço</span>
-              </div>
-            )}
-          </div>
+                  <p className="text-xs font-bold text-rose-700 flex items-center justify-center gap-1.5 animate-pulse">
+                    <Timer className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>O tempo continua correndo! Clique acima para avançar!</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="text-xs text-[#713000]/60 italic py-2.5 flex items-center justify-center gap-1.5 font-mono">
+                  <AlertCircle className="w-4 h-4 text-[#B66C3D]" />
+                  <span>Toque em Verdadeiro ou Falso para habilitar a próxima pergunta</span>
+                </div>
+              )}
+            </div>
 
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Bottom Exit Bar */}
@@ -289,8 +324,9 @@ export const GameStage: React.FC<GameStageProps> = ({
           Sair da Partida
         </button>
 
-        <span className="font-mono text-[11px]">
-          O cronômetro não para · Gabarito completo no final!
+        <span className="font-mono text-[11px] flex items-center gap-1.5">
+          <Music className="w-3 h-3 text-[#B66C3D]" />
+          <span>Música ambiente ativa · O cronômetro não para!</span>
         </span>
       </div>
 
