@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Submissions collection for live quiz ranking
+    match /submissions/{submissionId} {
+      allow read: if true;
+      allow create: if request.resource.data.participantName is string
+                    && request.resource.data.participantEmail is string
+                    && request.resource.data.score is number;
+      allow update, delete: if true;
+    }
+
+    // Quiz questions and general configuration
+    match /config/quiz {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Visual identity (Nutri photo & logo)
+    match /config/identity {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

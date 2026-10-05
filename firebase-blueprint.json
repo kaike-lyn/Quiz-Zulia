@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "Submission": {
+      "title": "Submission",
+      "description": "A quiz participant's submitted results and answers for the leaderboard.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique submission identifier" },
+        "participantName": { "type": "string", "description": "Name of the participant" },
+        "participantEmail": { "type": "string", "description": "Email of the participant" },
+        "participantPhone": { "type": "string", "description": "Optional phone number or WhatsApp" },
+        "score": { "type": "number", "description": "Number of correct answers" },
+        "totalQuestions": { "type": "number", "description": "Total number of questions in quiz" },
+        "percentage": { "type": "number", "description": "Accuracy percentage" },
+        "totalDurationSeconds": { "type": "number", "description": "Elapsed time in seconds" },
+        "formattedTime": { "type": "string", "description": "Human-readable time mm:ss" },
+        "submittedAt": { "type": "string", "description": "ISO timestamp of completion" },
+        "answers": { "type": "array", "description": "List of answers submitted" }
+      },
+      "required": [
+        "id",
+        "participantName",
+        "participantEmail",
+        "score",
+        "totalQuestions",
+        "percentage",
+        "totalDurationSeconds",
+        "formattedTime",
+        "submittedAt"
+      ]
+    },
+    "QuizConfig": {
+      "title": "QuizConfig",
+      "description": "Custom questions and quiz settings managed by the nutritionist.",
+      "type": "object",
+      "properties": {
+        "questions": { "type": "array", "description": "Array of quiz questions" },
+        "settings": { "type": "object", "description": "Quiz settings object" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
+      },
+      "required": ["questions", "settings", "updatedAt"]
+    },
+    "IdentityConfig": {
+      "title": "IdentityConfig",
+      "description": "Visual identity assets including photo and logo.",
+      "type": "object",
+      "properties": {
+        "photoUrl": { "type": "string", "description": "Custom photo data or URL" },
+        "logoUrl": { "type": "string", "description": "Custom logo data or URL" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of update" }
+      }
+    }
+  },
+  "firestore": {
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Individual quiz submissions accessible for leaderboard calculations"
+    },
+    "/config/quiz": {
+      "schema": "QuizConfig",
+      "description": "Global quiz configuration and questions"
+    },
+    "/config/identity": {
+      "schema": "IdentityConfig",
+      "description": "Global nutritionist branding photo and logo"
+    }
+  }
+}

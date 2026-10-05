@@ -278,33 +278,52 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setTimeout(() => setSaveSuccessMsg(''), 3000);
   };
 
-  // Export submissions to CSV
-  const exportToCSV = () => {
+  // Export submissions to Excel (.csv format with UTF-8 BOM and semicolon separator for Excel Brasil)
+  const exportToExcel = () => {
     if (submissions.length === 0) {
-      alert('Nenhum resultado registrado ainda para exportar.');
+      showToast('Nenhum resultado registrado ainda para exportar.');
       return;
     }
 
-    const headers = ['Data', 'Nome', 'Email', 'Telefone', 'Acertos', 'Total', 'Aproveitamento %', 'Tempo Total'];
-    const rows = submissions.map((s) => [
+    const headers = [
+      'Posição',
+      'Data e Hora',
+      'Nome do Participante',
+      'E-mail',
+      'Telefone / WhatsApp',
+      'Acertos',
+      'Total de Perguntas',
+      'Aproveitamento (%)',
+      'Tempo Total',
+      'Tempo (segundos)'
+    ];
+
+    const rows = submissions.map((s, index) => [
+      index + 1,
       `"${new Date(s.submittedAt).toLocaleString('pt-BR')}"`,
-      `"${s.participantName.replace(/"/g, '""')}"`,
-      `"${s.participantEmail.replace(/"/g, '""')}"`,
+      `"${(s.participantName || '').replace(/"/g, '""')}"`,
+      `"${(s.participantEmail || '').replace(/"/g, '""')}"`,
       `"${(s.participantPhone || '').replace(/"/g, '""')}"`,
       s.score,
       s.totalQuestions,
       `"${s.percentage}%"`,
-      `"${s.formattedTime}"`,
+      `"${s.formattedTime || ''}"`,
+      s.totalDurationSeconds || 0
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    // UTF-8 BOM (\uFEFF) ensures Excel opens special characters (acentos) perfectly
+    // Semicolon (;) ensures Portuguese Excel automatically splits data into columns
+    const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Resultados_Quiz_Julia_Bucchianico_${new Date().toISOString().split('T')[0]}.csv`);
+    link.href = url;
+    link.setAttribute('download', `Planilha_Resultados_Quiz_Julia_Bucchianico_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Planilha Excel baixada com sucesso!');
   };
 
   const handleCopyLink = async (customText?: string) => {
@@ -495,11 +514,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             <div className="flex items-center gap-2">
               <button
-                onClick={exportToCSV}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#2C4839] bg-[#EEF4F0] hover:bg-[#DEEBE1] rounded-xl transition-colors cursor-pointer"
+                onClick={exportToExcel}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Exportar tabela completa para planilha do Excel"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Exportar CSV (Excel)</span>
+                <span>Exportar para Planilha Excel</span>
               </button>
 
               <button
